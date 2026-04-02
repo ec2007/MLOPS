@@ -1,45 +1,43 @@
-# This workflow will upload a Python Package to PyPI when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Upload Python Package
 
 on:
-  push: 
+  workflow_dispatch:
+  push:
     branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-   matrix-pip:
-    name: name and train the model
+  matrix-pip:
+    name: Train the model
     runs-on: ubuntu-latest
-    startegy:
+
+    strategy:
       matrix:
-      python: [3.11,3.12]
+        python: ["3.11", "3.12"]
 
-  steps:
-    -name: Checkout
-     uses: action/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-   -name: Setup Python
-    uses: action/setup-python@v4
-    with:
-     python-version: ${{ matrix.python }}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
 
-   -name: Upgrade pip
-    run: pyhton -m pip install --upgrade pip
-  -name: install project dependenices 
-    run: python -m pip install  -r requirements.txt
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-  -name: train the model
-    run: python train.python
-         ls -la artifacts
-         
-  -name: upload artifacts
-   uses:  action/upload-artifacts
-  
+      - name: Install project dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Train the model
+        run: |
+          python train.py
+          ls -la artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artifacts-${{ matrix.python }}
+          path: artifacts/
